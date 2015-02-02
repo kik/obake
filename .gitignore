@@ -1,0 +1,7 @@
+.omake*
+*.omc
+*.cmi
+*.cmx
+*.o
+obake
+obake.opt
