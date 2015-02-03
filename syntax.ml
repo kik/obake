@@ -281,6 +281,11 @@ and constraints_binder assum p c =
   let cs = constraints assum' c in
   (cs, ty)
 
+let constraints_program t =
+  let w = "#real_world" in
+  let assum = IdMap.singleton w (Linear(Pos(PBase(TyWorld)))) in
+  constraints assum (Cmd(Var(w), t))
+
 module IntMap = Map.Make(struct type t = int let compare = compare end)
 
 let rec unify ss = function
@@ -376,7 +381,67 @@ let run_unify cs ty =
   let ss = unify IntMap.empty cs in
   substitute ss ty
 
+let check_unify cs =
+  let ss = unify IntMap.empty cs in
+  ignore ss
+
+type value =
+| VPat of value pattern
+| VMu of id pattern * command * value IdMap.t
+| VInL of value
+| VInR of value
+| VConst of const
+| VRealWorld
+
+let rec to_value env = function
+  | Var(id) -> IdMap.find id env
+  | Pat(p) -> VPat(to_value_pattern env p)
+  | Mu(p, c) -> VMu(p, c, env)
+  | InL(t) -> VInL(to_value env t)
+  | InR(t) -> VInR(to_value env t)
+  | Proj(c1, c2) -> assert false
+  | Const(c) -> VConst(c)
+
+and to_value_pattern env = function
+  | Id(t) -> Id(to_value env t)
+  | Floor(t) -> Floor(to_value env t)
+  | Up(t) -> Up(to_value env t)
+  | Tuple(p1, p2) -> Tuple(to_value_pattern env p1, to_value_pattern env p2)
+
+let rec add_env env p v = match p, v with
+  | Id(id), v
+  | Floor(id), VPat(Floor(v))
+  | Up(id), VPat(Up(v)) ->
+    IdMap.add id v env
+  | Tuple(p1, p2), VPat(Tuple(v1, v2)) ->
+    add_env (add_env env p1 (VPat(v1))) p2 (VPat(v2))
+  | _, _ -> assert false
+
+let stepv env v u = match v, u with
+  | VMu(p, c, env'), _ ->
+    Some(add_env env' p (to_value env u), c)
+  | VInL(v), Proj((p, c), _)
+  | VInR(v), Proj(_, (p, c)) ->
+    Some(add_env env p v, c)
+  | v, Mu(p, c) ->
+    Some(add_env env p v, c)
+  | v, u ->
+    match to_value env u with
+    | VConst(CBreak) -> None
+
+    | _ -> assert false
+
+let step env = function
+  | Cmd(t, u) -> stepv env (to_value env t) u
+
 open Format
+
+let pp_const fmt = function
+  | CInt(n) ->
+    fprintf fmt "%d" n
+  | CBreak -> pp_print_string fmt "break"
+  | CGetc -> pp_print_string fmt "getc"
+  | CPutc -> pp_print_string fmt "putc"
 
 let rec pp_pattern pp_a fmt = function
   | Id(t) -> pp_a fmt t
@@ -408,11 +473,7 @@ let rec pp_term fmt = function
       pp_command cl
       (pp_pattern pp_print_string) pr
       pp_command cr
-  | Const(CInt(n)) ->
-    fprintf fmt "%d" n
-  | Const(CBreak) -> pp_print_string fmt "break"
-  | Const(CGetc) -> pp_print_string fmt "getc"
-  | Const(CPutc) -> pp_print_string fmt "putc"
+  | Const(c) -> pp_const fmt c
 
 and pp_command fmt = function
   | Cmd(t1, t2) ->
@@ -464,3 +525,10 @@ and pp_btype fmt = function
   | TyInt -> pp_print_string fmt "int"
   | TyWorld -> pp_print_string fmt "world"
 
+let pp_value fmt = function
+  | VPat(_) -> pp_print_string fmt "(...)"
+  | VMu _ -> pp_print_string fmt "#closure"
+  | VInL(_) -> pp_print_string fmt "inl(...)"
+  | VInR(_) -> pp_print_string fmt "inr(...)"
+  | VConst(c) -> pp_const fmt c
+  | VRealWorld -> pp_print_string fmt "#world"
