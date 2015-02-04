@@ -220,8 +220,12 @@ and constraints assum = function
     let (ct, tt) = constraints_term assum1 t and
         (cu, tu) = constraints_term assum2 u
     in
-    let cs = [tt, neg_type tu] in
-    cs @ ct @ cu
+    match tt with
+    | Pos(_) ->
+      let cs = [tt, neg_type tu] in
+      cs @ ct @ cu
+    | Neg(_) ->
+      failwith "type of first term must be positive"
 
 and constraints_term assum =
   let open IdMap in

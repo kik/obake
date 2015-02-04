@@ -5,3 +5,7 @@
 *.o
 obake
 obake.opt
+lexer.ml
+parser.ml
+parser.mli
+parser.output

@@ -158,4 +158,5 @@
 #
 # .DEFAULT: $(OCamlProgram $(PROGRAM), $(FILES))
 
-.DEFAULT: $(OCamlProgram obake, syntax main)
+OCAMLYACCFLAGS = -v
+.DEFAULT: $(OCamlProgram obake, syntax parser lexer main)
