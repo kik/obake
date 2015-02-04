@@ -4,7 +4,7 @@ let run_type_checker ~verbose t =
   let fv = freevars t in
   let assum =
     IdSet.fold (fun id a ->
-      let (pt, _) = alloc_type () in
+      let (pt, _) = alloc_type ~hint:id () in
       IdMap.add id (Duplicable(Pos(pt))) a
     ) fv IdMap.empty
   in
@@ -18,8 +18,12 @@ let run_type_checker ~verbose t =
         Format.printf "    %a = %a@."
           pp_type c1
           pp_type c2) cs;
-      let ty = run_unify cs ty in
-      Format.printf "  inferred type: %a@." pp_type ty
+      let (ss, ty) = run_unify cs ty in
+      Format.printf "  inferred type: %a@." pp_type ty;
+      Format.printf "  substitute:@.";
+      IntMap.iter (fun i ty ->
+        Format.printf "    %d := %a@." i pp_type ty)
+        ss
     with
     | Failure(s) ->
       Format.printf "error: %s@." s
@@ -33,7 +37,7 @@ let run_interp ~verbose t =
     check_unify cs;
     if verbose then
       Format.eprintf "Execute:@.";
-    let rec loop env c =
+    let rec loop env v u =
       if verbose then begin
         Format.eprintf "--------@.";
         Format.eprintf "  [@.";
@@ -41,15 +45,13 @@ let run_interp ~verbose t =
           Format.eprintf "    %s := %a@." id pp_value v)
           env;
         Format.eprintf "  ]@.";
-        Format.eprintf "  %a ===>@.@." pp_command c;
+        Format.eprintf "  <%a | %a> ===>@.@." pp_value v pp_term u;
       end;
-      match step env c with
-      | Some(env, c) -> loop env c
+      match step env v u with
+      | Some(env, v, u) -> loop env v u
       | None -> ()
     in
-    let r = "__internal_real_world" in
-    let c = Cmd(Var(r), t) in
-    loop (IdMap.singleton r VRealWorld) c;
+    loop IdMap.empty (VConst(CRealWorld)) t;
     if verbose then
       Format.eprintf "Done@.";
   with

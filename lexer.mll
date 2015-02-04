@@ -20,6 +20,7 @@ rule token = parse
 | '!' { OFCOURSE }
 | '^' { UP }
 | "mu" { MU }
+| "'mu" { QMU }
 | "inl" { INL }
 | "inr" { INR }
 | "break" { BREAK }
