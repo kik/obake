@@ -285,9 +285,8 @@ and constraints_term assum =
   | Const(CInt(_)) -> ([], Pos(PBase(TyInt)))
   | Const(CBreak) -> ([], Neg(NBase(TyWorld)))
   | Const(CGetc) ->
-    let (tp, tn) = alloc_type ~hint:"getc" () in
     ([], Neg(
-      NPar(NBase(TyWorld), NPar(NUp(PTensor(PBase(TyWorld), PTensor(PBase(TyInt), tp))), tn))))
+      NPar(NBase(TyWorld), NUp(PTensor(PBase(TyWorld), PBase(TyInt))))))
   | Const(CPutc) ->
     ([], Neg(
       NPar(NBase(TyWorld), NPar(NBase(TyInt), NUp(PBase(TyWorld))))))

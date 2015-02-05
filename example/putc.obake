@@ -1,6 +1,6 @@
 mu w,
 <
-  (w, 65, 'mu w, <w|break>)
+  (w, 72, 'mu w, <w|break>)
 |
   putc
 >

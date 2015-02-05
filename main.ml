@@ -60,9 +60,14 @@ let run_interp ~verbose t =
 
 let main ~type_check_only ~enable_cpp ~verbose file =
   let t =
-    let ch = open_in file in
-    let t = Parser.term Lexer.token (Lexing.from_channel ch) in
-    close_in ch; t
+    if file = "-" then
+      let ch = stdin in
+      let t = Parser.term Lexer.token (Lexing.from_channel ch) in
+      t
+    else
+      let ch = open_in file in
+      let t = Parser.term Lexer.token (Lexing.from_channel ch) in
+      close_in ch; t
   in
   if type_check_only then
     run_type_checker ~verbose t
@@ -83,5 +88,10 @@ let () =
   ] in
   Arg.parse s (fun arg -> files := !files @ [arg])  "";
 
-  List.iter (main ~type_check_only:!type_check_only ~enable_cpp:!enable_cpp ~verbose:!verbose) !files
+  let files =
+    match !files with
+    | [] -> ["-"]
+    | x -> x
+  in
+  List.iter (main ~type_check_only:!type_check_only ~enable_cpp:!enable_cpp ~verbose:!verbose) files
 
