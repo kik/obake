@@ -404,7 +404,8 @@ let check_unify cs =
   ignore ss
 
 type value =
-| VPat of value pattern
+| VUnit
+| VTuple of value * value
 | VMu of id pattern * command * value IdMap.t
 | VInL of value
 | VInR of value
@@ -412,7 +413,7 @@ type value =
 
 let rec to_value env = function
   | Var(id) -> IdMap.find id env
-  | Pat(p) -> VPat(to_value_pattern env p)
+  | Pat(p) -> to_value_pattern env p
   | Mu(_, p, c) -> VMu(p, c, env)
   | Up(t) -> assert false
   | InL(t) -> VInL(to_value env t)
@@ -421,19 +422,18 @@ let rec to_value env = function
   | Const(c) -> VConst(c)
 
 and to_value_pattern env = function
-  | Id(t) -> Id(to_value env t)
-  | Floor(t) -> Floor(to_value env t)
-  | Unit -> Unit
-  | Tuple(p1, p2) -> Tuple(to_value_pattern env p1, to_value_pattern env p2)
+  | Id(t) -> to_value env t
+  | Floor(t) -> to_value env t
+  | Unit -> VUnit
+  | Tuple(p1, p2) -> VTuple(to_value_pattern env p1, to_value_pattern env p2)
 
 let rec add_env env p v = match p, v with
-  | Id(id), VPat(Id(v))
   | Id(id), v
-  | Floor(id), VPat(Floor(v)) ->
+  | Floor(id), v ->
     IdMap.add id v env
-  | Unit, VPat(Unit) -> env
-  | Tuple(p1, p2), VPat(Tuple(v1, v2)) ->
-    add_env (add_env env p1 (VPat(v1))) p2 (VPat(v2))
+  | Unit, VUnit -> env
+  | Tuple(p1, p2), VTuple(v1, v2) ->
+    add_env (add_env env p1 v1) p2 v2
   | _, _ -> assert false
 
 let step_cmd env = function
@@ -445,10 +445,10 @@ let step env v u = match u, v with
   | Proj(_, (p, c)), VInR(v) ->
     step_cmd (add_env env p v) c
   | Const(CBreak), VConst(CRealWorld) -> None
-  | Const(CPutc), VPat(Tuple(Id(VConst(CRealWorld)), Tuple(Id(VConst(CInt(ch))), Id(ret)))) ->
+  | Const(CPutc), VTuple(VConst(CRealWorld), VTuple(VConst(CInt(ch)), ret)) ->
     output_byte stdout ch;
     Some(env, ret, Up(Const(CRealWorld)))
-  | Const(CGetc), VPat(Tuple(Id(VConst(CRealWorld)), Id(ret))) ->
+  | Const(CGetc), VTuple(VConst(CRealWorld), ret) ->
     let ch =
       try input_byte stdin
       with End_of_file -> -1
@@ -471,7 +471,7 @@ let pp_const fmt = function
   | CRealWorld -> pp_print_string fmt "#world"
 
 let rec pp_pattern pp_a fmt = function
-  | Id(t) -> fprintf fmt "(%a)" pp_a t
+  | Id(t) -> pp_a fmt t
   | Floor(t) ->
     fprintf fmt "!%a" pp_a t
   | Unit -> pp_print_string fmt "()"
@@ -560,8 +560,9 @@ and pp_btype fmt = function
   | TyWorld -> pp_print_string fmt "world"
 
 let rec pp_value fmt = function
-  | VPat(p) ->
-    pp_pattern pp_value fmt p
+  | VUnit -> pp_print_string fmt "()"
+  | VTuple(v1, v2) ->
+    fprintf fmt "(%a, %a)" pp_value v1 pp_value v2
   | VMu _ -> pp_print_string fmt "#closure"
   | VInL(v) ->
     fprintf fmt "inl(%a)" pp_value v
