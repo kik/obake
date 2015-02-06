@@ -1,4 +1,7 @@
 open Syntax
+open Pp
+open Infer
+open Exec
 
 let run_type_checker ~verbose t =
   let fv = freevars t in
