@@ -14,6 +14,7 @@ let rec pp_pattern pp_a fmt = function
   | Floor(t) ->
     fprintf fmt "!%a" pp_a t
   | Unit -> pp_print_string fmt "()"
+  | False -> pp_print_string fmt "{}"
   | Tuple(p1, p2) ->
     fprintf fmt "(%a, %a)"
       (pp_pattern pp_a) p1

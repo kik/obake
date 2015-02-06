@@ -14,6 +14,7 @@ and to_value_pattern env = function
   | Id(t) -> to_value env t
   | Floor(t) -> to_value env t
   | Unit -> VUnit
+  | False -> assert false
   | Tuple(p1, p2) -> VTuple(to_value_pattern env p1, to_value_pattern env p2)
 
 let rec add_env env p v = match p, v with

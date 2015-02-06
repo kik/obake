@@ -26,6 +26,7 @@ and 'a pattern =
 | Id of 'a
 | Floor of 'a
 | Unit
+| False
 | Tuple of 'a pattern * 'a pattern
 
 type btype =

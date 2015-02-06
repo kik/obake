@@ -52,6 +52,7 @@ id_pattern:
  | IDENT { Id($1) }
  | OFCOURSE IDENT { Floor($2) }
  | LPAREN RPAREN { Unit }
+ | LBRACE RBRACE { False }
  | LPAREN id_pattern RPAREN { $2 }
  | LPAREN id_pattern COMMA id_patterns RPAREN
      { Tuple($2, $4) }

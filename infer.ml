@@ -27,7 +27,7 @@ let id_map_merge_left =
 
 let rec freevars_pattern f = function
   | Id(t) | Floor(t) -> f t
-  | Unit -> IdSet.empty
+  | Unit | False -> IdSet.empty
   | Tuple(p1, p2) ->
     let fv1 = freevars_pattern f p1 and
         fv2 = freevars_pattern f p2
@@ -97,6 +97,7 @@ let rec constraints_term_pattern assum =
     | Neg(_) -> failwith "can not floor negative type"
   end
   | Unit -> ([], Pos(POne))
+  | False -> assert false
   | Tuple(p1, p2) ->
     let fv1 = freevars_pattern freevars p1 and
         fv2 = freevars_pattern freevars p2
@@ -119,6 +120,8 @@ and constraints_binder_pattern =
     (IdMap.singleton t (Duplicable(Pos(pty))), Neg(NWhyNot(nty)))
   | Unit ->
     (IdMap.empty, Neg(NBot))
+  | False ->
+    (IdMap.empty, Neg(NTop))
   | Tuple(p1, p2) ->
     let (bs1, ty1) = constraints_binder_pattern p1 and
         (bs2, ty2) = constraints_binder_pattern p2
