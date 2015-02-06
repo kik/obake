@@ -427,6 +427,7 @@ and to_value_pattern env = function
   | Tuple(p1, p2) -> Tuple(to_value_pattern env p1, to_value_pattern env p2)
 
 let rec add_env env p v = match p, v with
+  | Id(id), VPat(Id(v))
   | Id(id), v
   | Floor(id), VPat(Floor(v)) ->
     IdMap.add id v env
@@ -447,6 +448,12 @@ let step env v u = match u, v with
   | Const(CPutc), VPat(Tuple(Id(VConst(CRealWorld)), Tuple(Id(VConst(CInt(ch))), Id(ret)))) ->
     output_byte stdout ch;
     Some(env, ret, Up(Const(CRealWorld)))
+  | Const(CGetc), VPat(Tuple(Id(VConst(CRealWorld)), Id(ret))) ->
+    let ch =
+      try input_byte stdin
+      with End_of_file -> -1
+    in
+    Some(env, ret, Up(Pat(Tuple(Id(Const(CRealWorld)), Id(Const(CInt(ch)))))))
   | Up(u), VMu(p, c, env') ->
     step_cmd (add_env env' p (to_value env u)) c
   | _, _ ->
@@ -464,7 +471,7 @@ let pp_const fmt = function
   | CRealWorld -> pp_print_string fmt "#world"
 
 let rec pp_pattern pp_a fmt = function
-  | Id(t) -> pp_a fmt t
+  | Id(t) -> fprintf fmt "(%a)" pp_a t
   | Floor(t) ->
     fprintf fmt "!%a" pp_a t
   | Unit -> pp_print_string fmt "()"
@@ -552,9 +559,12 @@ and pp_btype fmt = function
   | TyInt -> pp_print_string fmt "int"
   | TyWorld -> pp_print_string fmt "world"
 
-let pp_value fmt = function
-  | VPat(_) -> pp_print_string fmt "(...)"
+let rec pp_value fmt = function
+  | VPat(p) ->
+    pp_pattern pp_value fmt p
   | VMu _ -> pp_print_string fmt "#closure"
-  | VInL(_) -> pp_print_string fmt "inl(...)"
-  | VInR(_) -> pp_print_string fmt "inr(...)"
+  | VInL(v) ->
+    fprintf fmt "inl(%a)" pp_value v
+  | VInR(v) ->
+    fprintf fmt "inr(%a)" pp_value v
   | VConst(c) -> pp_const fmt c
