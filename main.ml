@@ -63,14 +63,13 @@ let run_interp ~verbose t =
 
 let main ~type_check_only ~enable_cpp ~verbose file =
   let t =
-    if file = "-" then
-      let ch = stdin in
-      let t = Parser.term Lexer.token (Lexing.from_channel ch) in
-      t
-    else
-      let ch = open_in file in
-      let t = Parser.term Lexer.token (Lexing.from_channel ch) in
-      close_in ch; t
+    let cmd = if enable_cpp
+      then "cpp -w " ^ file
+      else "cat " ^ file
+    in
+    let ch = Unix.open_process_in cmd in
+    let t = Parser.term Lexer.token (Lexing.from_channel ch) in
+    ignore (Unix.close_process_in ch); t
   in
   if type_check_only then
     run_type_checker ~verbose t
@@ -80,13 +79,13 @@ let main ~type_check_only ~enable_cpp ~verbose file =
 let () =
   let open Arg in
   let type_check_only = ref false and
-      enable_cpp = ref false and
+      disable_cpp = ref false and
       verbose = ref false and
       files = ref []
   in
   let s = [
     ("-t", Arg.Set type_check_only, "run type checker only (can handle open term)");
-    ("-p", Arg.Set enable_cpp, "enable preprocessor (not implemented)");
+    ("-p", Arg.Set disable_cpp, "disable preprocessor");
     ("-v", Arg.Set verbose, "verbose mode");
   ] in
   Arg.parse s (fun arg -> files := !files @ [arg])  "";
@@ -96,5 +95,5 @@ let () =
     | [] -> ["-"]
     | x -> x
   in
-  List.iter (main ~type_check_only:!type_check_only ~enable_cpp:!enable_cpp ~verbose:!verbose) files
+  List.iter (main ~type_check_only:!type_check_only ~enable_cpp:(not !disable_cpp) ~verbose:!verbose) files
 

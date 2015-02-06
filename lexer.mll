@@ -8,6 +8,7 @@ let alpha = ['a'-'z' 'A'-'Z']
 
 rule token = parse
 | space+ { token lexbuf }
+| "#" [^ '\n' ]* '\n' { token lexbuf }
 | "(*" { comment lexbuf; token lexbuf }
 | ',' { COMMA }
 | '{' { LBRACE }

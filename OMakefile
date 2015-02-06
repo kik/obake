@@ -1,2 +1,3 @@
 OCAMLYACCFLAGS = -v
+OCAML_OTHER_LIBS = unix
 .DEFAULT: $(OCamlProgram obake, syntax pp infer exec parser lexer main)
