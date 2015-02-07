@@ -41,10 +41,10 @@ let step env v u = match u, v with
     Some(env, ret, Up(Const(CRealWorld)))
   | Const(CGetc), VTuple(VConst(CRealWorld), ret) ->
     let ch =
-      try input_byte stdin
-      with End_of_file -> -1
+      try InR(Const(CInt(input_byte stdin)))
+      with End_of_file -> InL(Pat(Unit))
     in
-    Some(env, ret, Up(Pat(Tuple(Id(Const(CRealWorld)), Id(Const(CInt(ch)))))))
+    Some(env, ret, Up(Pat(Tuple(Id(Const(CRealWorld)), Id(ch)))))
   | Const(CFix), VTuple(VMu(p, c, env'), ret) ->
     step_cmd (add_env env' p (VTuple(VFix(p, c, env'), ret))) c
   | Up(u), VMu(p, c, env') ->

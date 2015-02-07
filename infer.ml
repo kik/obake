@@ -202,7 +202,7 @@ and constraints_term assum =
   | Const(CBreak) -> ([], Neg(NBase(TyWorld)))
   | Const(CGetc) ->
     ([], Neg(
-      NPar(NBase(TyWorld), NUp(PTensor(PBase(TyWorld), PBase(TyInt))))))
+      NPar(NBase(TyWorld), NUp(PTensor(PBase(TyWorld), PSum(POne, PBase(TyInt)))))))
   | Const(CPutc) ->
     ([], Neg(
       NPar(NBase(TyWorld), NPar(NBase(TyInt), NUp(PBase(TyWorld))))))
@@ -211,7 +211,7 @@ and constraints_term assum =
   | Const(CFix) ->
     let (tp, tn) = alloc_type ~hint:"fix" () in
     ([], Neg(
-      NPar(NWhyNot(NUp(PTensor(PDown(tn), tp))), tn)))
+      NPar(NWhyNot(NUp(PTensor(POfCourse(PDown(tn)), tp))), tn)))
 
 and constraints_binder assum p c =
   let (bs, ty) = constraints_binder_pattern p in

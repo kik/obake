@@ -1,3 +1,6 @@
 mu w,
-< (w, 'mu (w, c), < (w, c, 'mu w, <w | break> ) | putc >) | getc > 
-
+< (w, 'mu (w, c),
+  < c | { (), < w | break >
+        | c,  < (w, c, 'mu w, <w | break>) | putc >
+        }
+  >) | getc >
