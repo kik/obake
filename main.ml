@@ -48,13 +48,13 @@ let run_interp ~verbose t =
           Format.eprintf "    %s := %a@." id pp_value v)
           env;
         Format.eprintf "  ]@.";
-        Format.eprintf "  <%a | %a> ===>@.@." pp_value v pp_term u;
+        Format.eprintf "  <%a | %a> ===>@.@." pp_term v pp_value u;
       end;
       match step env v u with
       | Some(env, v, u) -> loop env v u
       | None -> ()
     in
-    loop IdMap.empty (VConst(CRealWorld)) t;
+    loop IdMap.empty t (VConst(CRealWorld));
     if verbose then
       Format.eprintf "Done@.";
   with

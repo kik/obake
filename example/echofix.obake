@@ -1,10 +1,6 @@
 mu w,
-< (!'mu (!f, w),
-
- < (w, 'mu (w, c),
-   < c | { (), <w | break>
-         | c, <(w, c, 'mu w, <f | ^w>) | putc>
-         }
-   >)
- | getc >,
-w ) | fix >
+< fix | (!'mu (!f, w),
+  < getc | (w, 'mu (w, c),
+     < { (), < break | w >
+       | c,  < putc | (w, c, 'mu w, < ^w | f >)>
+       } | c >)>, w)>

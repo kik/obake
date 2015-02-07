@@ -1,31 +1,16 @@
-mu w, < (w, 72,
-'mu w, < (w, 101,
-'mu w, < (w, 108,
-'mu w, < (w, 108,
-'mu w, < (w, 111,
-'mu w, < (w, 44,
-'mu w, < (w, 32,
-'mu w, < (w, 119,
-'mu w, < (w, 111,
-'mu w, < (w, 114,
-'mu w, < (w, 108,
-'mu w, < (w, 100,
-'mu w, < (w, 33,
-'mu w, < (w, 10,
-
-'mu w, <w|break>)
-
-|putc>)
-|putc>)
-|putc>)
-|putc>)
-|putc>)
-|putc>)
-|putc>)
-|putc>)
-|putc>)
-|putc>)
-|putc>)
-|putc>)
-|putc>)
-|putc>
+mu w,
+< putc | (w, 72,  'mu w,
+< putc | (w, 101, 'mu w,
+< putc | (w, 108, 'mu w,
+< putc | (w, 108, 'mu w,
+< putc | (w, 111, 'mu w,
+< putc | (w, 44,  'mu w,
+< putc | (w, 32,  'mu w,
+< putc | (w, 119, 'mu w,
+< putc | (w, 111, 'mu w,
+< putc | (w, 114, 'mu w,
+< putc | (w, 108, 'mu w,
+< putc | (w, 100, 'mu w,
+< putc | (w, 33,  'mu w,
+< putc | (w, 10,  'mu w,
+< break | w >)>)>)>)>)>)>)>)>)>)>)>)>)>)>

@@ -139,11 +139,11 @@ and constraints assum = function
         (cu, tu) = constraints_term assum2 u
     in
     match tt with
-    | Pos(_) ->
+    | Neg(_) ->
       let cs = [tt, neg_type tu] in
       cs @ ct @ cu
-    | Neg(_) ->
-      failwith "type of first term must be positive"
+    | Pos(_) ->
+      failwith "type of first term must be negative"
 
 and constraints_term assum =
   let open IdMap in
@@ -222,7 +222,7 @@ and constraints_binder assum p c =
 let constraints_program t =
   let w = "#real_world" in
   let assum = IdMap.singleton w (Linear(Pos(PBase(TyWorld)))) in
-  constraints assum (Cmd(Var(w), t))
+  constraints assum (Cmd(t, Var(w)))
 
 module IntMap = Map.Make(struct type t = int let compare = compare end)
 

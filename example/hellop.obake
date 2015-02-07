@@ -1,9 +1,6 @@
 #define QMU 'mu
-#define P(ch, c) QMU world, < (world, ch, (c)) | putc >
-#define E 'mu world, < world | break >
+#define P(ch, c) QMU world, < putc | (world, ch, (c)) >
+#define E 'mu world, < break | world >
 
 mu w,
-< P(72, P(101, P(108, P(108, P(111, P(44, P(32, P(119, P(111, P(114, P(108, P(100, P(33, P(10, E))))))))))))))
-|
-^w>
-
+< ^w | P(72, P(101, P(108, P(108, P(111, P(44, P(32, P(119, P(111, P(114, P(108, P(100, P(33, P(10, E))))))))))))))>

@@ -27,24 +27,24 @@ let rec add_env env p v = match p, v with
   | _, _ -> assert false
 
 let step_cmd env = function
-  | Cmd(t, u) -> Some(env, to_value env t, u)
+  | Cmd(t, u) -> Some(env, t, to_value env u)
 
-let step env v u = match u, v with
-  | Mu(_, p, c), v
-  | Proj((p, c), _), VInL(v)
-  | Proj(_, (p, c)), VInR(v) ->
-    step_cmd (add_env env p v) c
+let step env v u = match v, u with
+  | Mu(_, p, c), u
+  | Proj((p, c), _), VInL(u)
+  | Proj(_, (p, c)), VInR(u) ->
+    step_cmd (add_env env p u) c
   | Const(CBreak), VConst(CRealWorld) -> None
   | Const(CPutc), VTuple(VConst(CRealWorld), VTuple(VConst(CInt(ch)), ret)) ->
     output_byte stdout ch;
     flush stdout;
-    Some(env, ret, Up(Const(CRealWorld)))
+    Some(env, Up(Const(CRealWorld)), ret)
   | Const(CGetc), VTuple(VConst(CRealWorld), ret) ->
     let ch =
       try InR(Const(CInt(input_byte stdin)))
       with End_of_file -> InL(Pat(Unit))
     in
-    Some(env, ret, Up(Pat(Tuple(Id(Const(CRealWorld)), Id(ch)))))
+    Some(env, Up(Pat(Tuple(Id(Const(CRealWorld)), Id(ch)))), ret)
   | Const(CFix), VTuple(VMu(p, c, env'), ret) ->
     step_cmd (add_env env' p (VTuple(VFix(p, c, env'), ret))) c
   | Up(u), VMu(p, c, env') ->
