@@ -37,6 +37,7 @@ let step env v u = match u, v with
   | Const(CBreak), VConst(CRealWorld) -> None
   | Const(CPutc), VTuple(VConst(CRealWorld), VTuple(VConst(CInt(ch)), ret)) ->
     output_byte stdout ch;
+    flush stdout;
     Some(env, ret, Up(Const(CRealWorld)))
   | Const(CGetc), VTuple(VConst(CRealWorld), ret) ->
     let ch =
@@ -44,7 +45,11 @@ let step env v u = match u, v with
       with End_of_file -> -1
     in
     Some(env, ret, Up(Pat(Tuple(Id(Const(CRealWorld)), Id(Const(CInt(ch)))))))
+  | Const(CFix), VTuple(VMu(p, c, env'), ret) ->
+    step_cmd (add_env env' p (VTuple(VFix(p, c, env'), ret))) c
   | Up(u), VMu(p, c, env') ->
     step_cmd (add_env env' p (to_value env u)) c
+  | Up(u), (VFix(p, c, env') as f) ->
+    step_cmd (add_env env' p (VTuple(f, to_value env u))) c
   | _, _ ->
     assert false

@@ -1,0 +1,6 @@
+mu w,
+< (!'mu (f, w),
+
+ < (w, 'mu (w, c), < (w, c, 'mu w, <f | ^w>) | putc >) | getc >,
+
+w ) | fix >

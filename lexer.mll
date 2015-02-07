@@ -27,6 +27,7 @@ rule token = parse
 | "break" { BREAK }
 | "getc" { GETC }
 | "putc" { PUTC }
+| "fix" { FIX }
 | digit+ { INT(int_of_string (Lexing.lexeme lexbuf)) }
 | alpha (digit|alpha|'_')* { IDENT(Lexing.lexeme lexbuf) }
 | eof { EOF }

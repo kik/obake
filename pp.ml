@@ -8,6 +8,7 @@ let pp_const fmt = function
   | CGetc -> pp_print_string fmt "getc"
   | CPutc -> pp_print_string fmt "putc"
   | CRealWorld -> pp_print_string fmt "#world"
+  | CFix -> pp_print_string fmt "fix"
 
 let rec pp_pattern pp_a fmt = function
   | Id(t) -> pp_a fmt t
@@ -103,7 +104,8 @@ let rec pp_value fmt = function
   | VUnit -> pp_print_string fmt "()"
   | VTuple(v1, v2) ->
     fprintf fmt "(%a, %a)" pp_value v1 pp_value v2
-  | VMu _ -> pp_print_string fmt "#closure"
+  | VMu _  -> pp_print_string fmt "#closure"
+  | VFix _ -> pp_print_string fmt "#fix"
   | VInL(v) ->
     fprintf fmt "inl(%a)" pp_value v
   | VInR(v) ->

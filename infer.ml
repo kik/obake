@@ -208,6 +208,10 @@ and constraints_term assum =
       NPar(NBase(TyWorld), NPar(NBase(TyInt), NUp(PBase(TyWorld))))))
   | Const(CRealWorld) ->
     ([], Pos(PBase(TyWorld)))
+  | Const(CFix) ->
+    let (tp, tn) = alloc_type ~hint:"fix" () in
+    ([], Neg(
+      NPar(NWhyNot(NUp(PTensor(PDown(tn), tp))), tn)))
 
 and constraints_binder assum p c =
   let (bs, ty) = constraints_binder_pattern p in

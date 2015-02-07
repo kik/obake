@@ -6,6 +6,7 @@ type const =
 | CGetc
 | CPutc
 | CRealWorld
+| CFix
 
 type mu_type =
 | NegMu
@@ -91,7 +92,8 @@ module IdMap = Map.Make(String)
 type value =
 | VUnit
 | VTuple of value * value
-| VMu of id pattern * command * value IdMap.t
+| VMu  of id pattern * command * value IdMap.t
+| VFix of id pattern * command * value IdMap.t
 | VInL of value
 | VInR of value
 | VConst of const

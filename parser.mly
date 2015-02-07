@@ -4,7 +4,7 @@
 
 %token <string> IDENT
 %token <int> INT
-%token MU QMU COMMA INL INR LBRACE BAR RBRACE BREAK GETC PUTC
+%token MU QMU COMMA INL INR LBRACE BAR RBRACE BREAK GETC PUTC FIX
 %token LANGLE RANGLE LPAREN RPAREN OFCOURSE UP
 %token EOF
 
@@ -31,6 +31,7 @@ term:
  | BREAK { Const(CBreak) }
  | GETC { Const(CGetc) }
  | PUTC { Const(CPutc) }
+ | FIX  { Const(CFix) }
 
 command:
  | LANGLE term BAR term RANGLE
