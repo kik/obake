@@ -7,7 +7,7 @@ let run_type_checker ~verbose t =
   let fv = freevars t in
   let assum =
     IdSet.fold (fun id a ->
-      let (pt, _) = alloc_type ~hint:id () in
+      let pt = alloc_ptype ~hint:id () in
       IdMap.add id (Duplicable(Pos(pt))) a
     ) fv IdMap.empty
   in

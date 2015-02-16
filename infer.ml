@@ -1,10 +1,19 @@
 open Syntax
 
 let mvar_index = ref 0
-let alloc_type ~hint () =
+let alloc_type2 ~hint () =
   incr mvar_index;
   let bt = TyVar(!mvar_index, hint) in
   (PBase(bt), NBase(bt))
+
+let alloc_ptype ~hint () =
+  fst (alloc_type2 ~hint ())
+
+let alloc_ntype ~hint () =
+  snd (alloc_type2 ~hint ())
+
+let alloc_type ~hint () =
+  Pos(alloc_ptype ~hint ())
 
 let type_of_const =
   let unpos = function | Pos(t) -> t | _ -> assert false
@@ -21,8 +30,8 @@ let type_of_const =
   and up   t = Neg(NUp(unpos t))
   and down t = Pos(PDown(unneg t))
   in
-  let (^-->) t1 t2 = ~~t1 @ t2 (* -o *)
-  in
+  let (^-->) t1 t2 = ~~t1 @ t2 (* -o *) in
+  let absty ~hint f = f (alloc_type ~hint ()) in
   function
   | CInt(_) -> int
   | CBreak -> ~~world
@@ -30,12 +39,11 @@ let type_of_const =
   | CPutc -> world ^--> int ^--> up world
   | CRealWorld -> world
   | CFix ->
-    let (tp, tn) = alloc_type ~hint:"fix" () in
-    let t = Pos(tp) in
-    !.(down (
-      !.(down ~~t) ^--> ~~t)
-    )
-    ^--> ~~t
+    absty ~hint:"fix" (fun t ->
+      !.(down (
+        !.(down ~~t) ^--> ~~t)
+      )
+      ^--> ~~t)
 
 
 type decl =
@@ -145,10 +153,10 @@ let rec constraints_term_pattern assum =
 and constraints_binder_pattern =
   function
   | Id(t) ->
-    let (pty, nty) = alloc_type ~hint:t () in
+    let (pty, nty) = alloc_type2 ~hint:t () in
     (IdMap.singleton t (Linear(Pos(pty))), Neg(nty))
   | Floor(t) ->
-    let (pty, nty) = alloc_type ~hint:t () in
+    let (pty, nty) = alloc_type2 ~hint:t () in
     (IdMap.singleton t (Duplicable(Pos(pty))), Neg(NWhyNot(nty)))
   | Unit ->
     (IdMap.empty, Neg(NBot))
@@ -208,7 +216,7 @@ and constraints_term assum =
     let (cs, ty) = constraints_term assum t in
     match ty with
     | Pos(tp1) ->
-      let (tp2, _) = alloc_type ~hint:"InL" () in
+      let tp2 = alloc_ptype ~hint:"InL" () in
       (cs, Pos(PSum(tp1, tp2)))
     | Neg(_) ->
       failwith "can not sum negative type"
@@ -217,7 +225,7 @@ and constraints_term assum =
     let (cs, ty) = constraints_term assum t in
     match ty with
     | Pos(tp2) ->
-      let (tp1, _) = alloc_type ~hint:"InR" () in
+      let tp1 = alloc_ptype ~hint:"InR" () in
       (cs, Pos(PSum(tp1, tp2)))
     | Neg(_) ->
       failwith "can not sum negative type"
