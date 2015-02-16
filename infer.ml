@@ -6,6 +6,38 @@ let alloc_type ~hint () =
   let bt = TyVar(!mvar_index, hint) in
   (PBase(bt), NBase(bt))
 
+let type_of_const =
+  let unpos = function | Pos(t) -> t | _ -> assert false
+  and unneg = function | Neg(t) -> t | _ -> assert false
+  in
+  let int   = Pos(PBase(TyInt))
+  and world = Pos(PBase(TyWorld))
+  and one   = Pos(POne)
+  and (~~)  = neg_type
+  and ( * ) t1 t2 = Pos(PTensor(unpos t1, unpos t2))
+  and (+)   t1 t2 = Pos(PSum(unpos t1, unpos t2))
+  and (@)   t1 t2 = Neg(NPar(unneg t1, unneg t2))
+  and (!.) t = Pos(POfCourse(unpos t))
+  and up   t = Neg(NUp(unpos t))
+  and down t = Pos(PDown(unneg t))
+  in
+  let (^-->) t1 t2 = ~~t1 @ t2 (* -o *)
+  in
+  function
+  | CInt(_) -> int
+  | CBreak -> ~~world
+  | CGetc -> world ^--> up (world * (one + int))
+  | CPutc -> world ^--> int ^--> up world
+  | CRealWorld -> world
+  | CFix ->
+    let (tp, tn) = alloc_type ~hint:"fix" () in
+    let t = Pos(tp) in
+    !.(down (
+      !.(down ~~t) ^--> ~~t)
+    )
+    ^--> ~~t
+
+
 type decl =
 | Linear of ty
 | Duplicable of ty
@@ -198,20 +230,7 @@ and constraints_term assum =
       match tyl, tyr with
       | Neg(tnl), Neg(tnr) -> NAnd(tnl, tnr)
       | _, _ -> failwith "can not and positive type"))
-  | Const(CInt(_)) -> ([], Pos(PBase(TyInt)))
-  | Const(CBreak) -> ([], Neg(NBase(TyWorld)))
-  | Const(CGetc) ->
-    ([], Neg(
-      NPar(NBase(TyWorld), NUp(PTensor(PBase(TyWorld), PSum(POne, PBase(TyInt)))))))
-  | Const(CPutc) ->
-    ([], Neg(
-      NPar(NBase(TyWorld), NPar(NBase(TyInt), NUp(PBase(TyWorld))))))
-  | Const(CRealWorld) ->
-    ([], Pos(PBase(TyWorld)))
-  | Const(CFix) ->
-    let (tp, tn) = alloc_type ~hint:"fix" () in
-    ([], Neg(
-      NPar(NWhyNot(NUp(PTensor(POfCourse(PDown(tn)), tp))), tn)))
+  | Const(c) -> ([], type_of_const c)
 
 and constraints_binder assum p c =
   let (bs, ty) = constraints_binder_pattern p in
