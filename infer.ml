@@ -32,6 +32,7 @@ let type_of_const =
   in
   let (^-->) t1 t2 = ~~t1 @ t2 (* -o *) in
   let absty ~hint f = f (alloc_type ~hint ()) in
+  let bool = one + one in
   function
   | CInt(_) -> int
   | CBreak -> ~~world
@@ -44,6 +45,9 @@ let type_of_const =
         !.(down ~~t) ^--> ~~t)
       )
       ^--> ~~t)
+  | CNeg -> int ^--> int
+  | CAdd | CSub -> int ^--> int ^--> int
+  | CLt | CGt | CLe | CGe | CEq | CNe -> int ^--> int ^--> bool
 
 
 type decl =

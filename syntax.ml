@@ -7,6 +7,15 @@ type const =
 | CPutc
 | CRealWorld
 | CFix
+| CNeg
+| CAdd
+| CSub
+| CLt
+| CGt
+| CLe
+| CGe
+| CEq
+| CNe
 
 type mu_type =
 | NegMu

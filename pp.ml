@@ -1,14 +1,25 @@
 open Syntax
 open Format
 
-let pp_const fmt = function
+let pp_const fmt =
+  let p = pp_print_string fmt in
+  function
   | CInt(n) ->
     fprintf fmt "%d" n
-  | CBreak -> pp_print_string fmt "break"
-  | CGetc -> pp_print_string fmt "getc"
-  | CPutc -> pp_print_string fmt "putc"
-  | CRealWorld -> pp_print_string fmt "#world"
-  | CFix -> pp_print_string fmt "fix"
+  | CBreak -> p "break"
+  | CGetc -> p "getc"
+  | CPutc -> p "putc"
+  | CRealWorld -> p "#world"
+  | CFix -> p "fix"
+  | CNeg -> p "neg"
+  | CAdd -> p "add"
+  | CSub -> p "sub"
+  | CLt -> p "lt"
+  | CGt -> p "gt"
+  | CLe -> p "le"
+  | CGe -> p "ge"
+  | CEq -> p "eq"
+  | CNe -> p "ne"
 
 let rec pp_pattern pp_a fmt = function
   | Id(t) -> pp_a fmt t

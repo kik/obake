@@ -34,22 +34,47 @@ let step env v u = match v, u with
   | Proj((p, c), _), VInL(u)
   | Proj(_, (p, c)), VInR(u) ->
     step_cmd (add_env env p u) c
-  | Const(CBreak), VConst(CRealWorld) -> None
-  | Const(CPutc), VTuple(VConst(CRealWorld), VTuple(VConst(CInt(ch)), ret)) ->
-    output_byte stdout ch;
-    flush stdout;
-    Some(env, Up(Const(CRealWorld)), ret)
-  | Const(CGetc), VTuple(VConst(CRealWorld), ret) ->
-    let ch =
-      try InR(Const(CInt(input_byte stdin)))
-      with End_of_file -> InL(Pat(Unit))
-    in
-    Some(env, Up(Pat(Tuple(Id(Const(CRealWorld)), Id(ch)))), ret)
-  | Const(CFix), VTuple(VMu(p, c, env'), ret) ->
-    step_cmd (add_env env' p (VTuple(VFix(p, c, env'), ret))) c
   | Up(u), VMu(p, c, env') ->
     step_cmd (add_env env' p (to_value env u)) c
   | Up(u), (VFix(p, c, env') as f) ->
     step_cmd (add_env env' p (VTuple(f, to_value env u))) c
+  | Const(CFix), VTuple(VMu(p, c, env'), ret) ->
+    step_cmd (add_env env' p (VTuple(VFix(p, c, env'), ret))) c
+  | Const(CBreak), VConst(CRealWorld) -> None
+  | Const(c), u -> begin
+    let bool_to_term b =
+      if b then InL(Pat(Unit)) else InR(Pat(Unit))
+    in
+    match c, u with
+    | CPutc, VTuple(VConst(CRealWorld), VTuple(VConst(CInt(ch)), ret)) ->
+      output_byte stdout ch;
+      flush stdout;
+      Some(env, Up(Const(CRealWorld)), ret)
+    | CGetc, VTuple(VConst(CRealWorld), ret) ->
+      let ch =
+        try InR(Const(CInt(input_byte stdin)))
+        with End_of_file -> InL(Pat(Unit))
+      in
+      Some(env, Up(Pat(Tuple(Id(Const(CRealWorld)), Id(ch)))), ret)
+    | CNeg, VTuple(VConst(CInt(n)), ret) ->
+      Some(env, Up(Const(CInt(-n))), ret)
+    | CAdd, VTuple(VConst(CInt(n)), VTuple(VConst(CInt(m)), ret)) ->
+      Some(env, Up(Const(CInt(n + m))), ret)
+    | CSub, VTuple(VConst(CInt(n)), VTuple(VConst(CInt(m)), ret)) ->
+      Some(env, Up(Const(CInt(n - m))), ret)
+    | CLt, VTuple(VConst(CInt(n)), VTuple(VConst(CInt(m)), ret)) ->
+      Some(env, Up(bool_to_term(n < m)), ret)
+    | CGt, VTuple(VConst(CInt(n)), VTuple(VConst(CInt(m)), ret)) ->
+      Some(env, Up(bool_to_term(n >  m)), ret)
+    | CLe, VTuple(VConst(CInt(n)), VTuple(VConst(CInt(m)), ret)) ->
+      Some(env, Up(bool_to_term(n <= m)), ret)
+    | CGe, VTuple(VConst(CInt(n)), VTuple(VConst(CInt(m)), ret)) ->
+      Some(env, Up(bool_to_term(n >= m)), ret)
+    | CEq, VTuple(VConst(CInt(n)), VTuple(VConst(CInt(m)), ret)) ->
+      Some(env, Up(bool_to_term(n = m)), ret)
+    | CNe, VTuple(VConst(CInt(n)), VTuple(VConst(CInt(m)), ret)) ->
+      Some(env, Up(bool_to_term(n <> m)), ret)
+    | _ -> assert false
+  end
   | _, _ ->
     assert false
