@@ -50,6 +50,10 @@ let step env v u = match v, u with
       output_byte stdout ch;
       flush stdout;
       Some(env, Up(Const(CRealWorld)), ret)
+    | CPrintInt, VTuple(VConst(CRealWorld), VTuple(VConst(CInt(n)), ret)) ->
+      print_int n;
+      flush stdout;
+      Some(env, Up(Const(CRealWorld)), ret)
     | CGetc, VTuple(VConst(CRealWorld), ret) ->
       let ch =
         try InR(Const(CInt(input_byte stdin)))

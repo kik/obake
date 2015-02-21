@@ -1,0 +1,16 @@
+mu w,
+< fix | (!'mu (!ack, !x, !y, ret),
+   < le | (x, 0, 'mu b, <
+     { (), < add | (y, 1, 'mu !z, < ^!z | ret >)>
+     | (),
+       < le | (y, 0, 'mu b, <
+         { (), < sub | (x, 1, 'mu !z, < ^(!z, !1, ret) | ack >)>
+         | (), < sub | (x, 1, 'mu !x2,
+               < sub | (y, 1, 'mu !y2,
+           < ^(!x, !y2, 'mu !v, < ^(!x2, !v, ret) | ack> ) | ack >)>)>
+         } | b >)>
+     } | b >) >,
+
+ !3, !10, 'mu !x,
+ < print_int | (w, x, 'mu w,
+ < break | w >)>)>

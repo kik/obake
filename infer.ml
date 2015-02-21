@@ -38,6 +38,7 @@ let type_of_const =
   | CBreak -> ~~world
   | CGetc -> world ^--> up (world * (one + int))
   | CPutc -> world ^--> int ^--> up world
+  | CPrintInt -> world ^--> int ^--> up world
   | CRealWorld -> world
   | CFix ->
     absty ~hint:"fix" (fun t ->
@@ -45,9 +46,9 @@ let type_of_const =
         !.(down ~~t) ^--> ~~t)
       )
       ^--> ~~t)
-  | CNeg -> int ^--> int
-  | CAdd | CSub -> int ^--> int ^--> int
-  | CLt | CGt | CLe | CGe | CEq | CNe -> int ^--> int ^--> bool
+  | CNeg -> int ^--> up !.int
+  | CAdd | CSub -> int ^--> int ^--> up !.int
+  | CLt | CGt | CLe | CGe | CEq | CNe -> int ^--> int ^--> up bool
 
 
 type decl =

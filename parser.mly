@@ -5,6 +5,7 @@
 %token <string> IDENT
 %token <int> INT
 %token MU QMU COMMA INL INR LBRACE BAR RBRACE BREAK GETC PUTC FIX
+%token PRINT_INT NEG ADD SUB LT GT LE GE EQ NE
 %token LANGLE RANGLE LPAREN RPAREN OFCOURSE UP
 %token EOF
 
@@ -31,7 +32,17 @@ term:
  | BREAK { Const(CBreak) }
  | GETC { Const(CGetc) }
  | PUTC { Const(CPutc) }
+ | PRINT_INT { Const(CPrintInt) }
  | FIX  { Const(CFix) }
+ | NEG { Const(CNeg) }
+ | ADD { Const(CAdd) }
+ | SUB { Const(CSub) }
+ | LT { Const(CLt) }
+ | GT { Const(CGt) }
+ | LE { Const(CLe) }
+ | GE { Const(CGe) }
+ | EQ { Const(CEq) }
+ | NE { Const(CNe) }
 
 command:
  | LANGLE term BAR term RANGLE

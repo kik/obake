@@ -27,7 +27,17 @@ rule token = parse
 | "break" { BREAK }
 | "getc" { GETC }
 | "putc" { PUTC }
+| "print_int" { PRINT_INT }
 | "fix" { FIX }
+| "neg" { NEG }
+| "add" { ADD }
+| "sub" { SUB }
+| "lt" { LT }
+| "gt" { GT }
+| "le" { LE }
+| "ge" { GE }
+| "eq" { EQ }
+| "ne" { NE }
 | digit+ { INT(int_of_string (Lexing.lexeme lexbuf)) }
 | alpha (digit|alpha|'_')* { IDENT(Lexing.lexeme lexbuf) }
 | eof { EOF }

@@ -9,6 +9,7 @@ let pp_const fmt =
   | CBreak -> p "break"
   | CGetc -> p "getc"
   | CPutc -> p "putc"
+  | CPrintInt -> p "print_int"
   | CRealWorld -> p "#world"
   | CFix -> p "fix"
   | CNeg -> p "neg"

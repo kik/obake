@@ -5,6 +5,7 @@ type const =
 | CBreak
 | CGetc
 | CPutc
+| CPrintInt
 | CRealWorld
 | CFix
 | CNeg
